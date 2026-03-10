@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
-import { catchError, map, throwError } from 'rxjs';
+import { catchError, map, of, throwError } from 'rxjs';
 
 @Injectable()
 export class OrdersService {
@@ -33,16 +33,9 @@ export class OrdersService {
           return res.data;
         }),
         catchError((err) => {
-          // return
-          return throwError(
-            () =>
-              new HttpException(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                err.response?.data?.error || 'API error',
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                err.response?.status || 500,
-              ),
-          );
+          return of({
+            error: err.response?.data?.error || 'API error'
+          });
         }),
       );
   }

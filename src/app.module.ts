@@ -4,6 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { OrdersService } from './eushipments/orders.service';
 import { HttpModule } from '@nestjs/axios';
+import { TelegramBotService } from './telegram/telegram-bot.service';
+import { TelegramAuthService } from './telegram/telegram-auth.service';
 
 @Module({
   imports: [
@@ -16,6 +18,6 @@ import { HttpModule } from '@nestjs/axios';
     }),
   ],
   controllers: [AppController],
-  providers: [OrdersService],
+  providers: [OrdersService, TelegramAuthService, TelegramBotService],
 })
 export class AppModule {}
