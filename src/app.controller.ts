@@ -1,12 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { OrdersService } from './eushipments/orders.service';
+import { Observable } from 'rxjs';
 
 @Controller()
 export class AppController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Get()
-  getHello(): string {
-    return this.ordersService.getOrder('1');
+  @Get('orders/:id')
+  getOrderStatus(@Param('id') id: string): Observable<string> {
+    return this.ordersService.getOrder(id);
   }
 }
