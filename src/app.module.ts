@@ -2,14 +2,15 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
-import { OrdersService } from './eushipments/orders.service';
 import { HttpModule } from '@nestjs/axios';
-import { TelegramBotService } from './telegram/telegram-bot.service';
-import { TelegramAuthService } from './telegram/telegram-auth.service';
+import { TelegramModule } from './telegram/telegram.module';
+import { EushipmentsModule } from './eushipments/eushipments.module';
 
 @Module({
   imports: [
-    HttpModule,
+
+    TelegramModule,
+    EushipmentsModule,
     // todo: add validation
     ConfigModule.forRoot({
       isGlobal: true,
@@ -18,6 +19,6 @@ import { TelegramAuthService } from './telegram/telegram-auth.service';
     }),
   ],
   controllers: [AppController],
-  providers: [OrdersService, TelegramAuthService, TelegramBotService],
+  providers: [],
 })
 export class AppModule {}

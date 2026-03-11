@@ -5,6 +5,7 @@ import { OrdersService } from '../eushipments/orders.service';
 import { TelegramNotification } from '../app.controller';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import { TelegramService } from './telegram.service';
 
 @Update()
 export class TelegramBotService {
@@ -13,6 +14,7 @@ export class TelegramBotService {
     private readonly configService: ConfigService,
     private readonly authService: TelegramAuthService,
     private readonly ordersService: OrdersService,
+    private readonly telegramService: TelegramService,
   ) {
     const telegramBotToken =
       configService.get<string>('EUSHIPMENTS_TG_BOT_TOKEN') || 'undefined';
@@ -20,13 +22,12 @@ export class TelegramBotService {
   }
 
   async order(notification: TelegramNotification) {
-    // const text: string = ctx.text || 'err';
     const orderId = notification.message;
 
     const orderStatus = await lastValueFrom(
       this.ordersService.getOrder(orderId),
     );
-    await this.bot.telegram.sendMessage(
+    await this.telegramService.sendMessage(
       notification.userId,
       JSON.stringify(orderStatus),
     );

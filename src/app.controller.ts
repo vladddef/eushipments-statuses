@@ -10,18 +10,18 @@ export interface TelegramNotification {
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly ordersService: OrdersService,
-    private readonly telegramBotService: TelegramBotService,
-  ) {}
-
-  @Get('orders/:id')
-  getOrderStatus(@Param('id') id: string): Observable<any> {
-    return this.ordersService.getOrder(id);
-  }
-
-  @Post('/message')
-  handleBotMessage(@Body() notification: TelegramNotification) {
-    return this.telegramBotService.order(notification);
-  }
+  // constructor(
+  //   private readonly ordersService: OrdersService,
+  //   private readonly telegramBotService: TelegramBotService,
+  // ) {}
+  //
+  // @Get('orders/:id')
+  // getOrderStatus(@Param('id') id: string): Observable<any> {
+  //   return this.ordersService.getOrder(id);
+  // }
+  //
+  // @Post('/message')
+  // handleBotMessage(@Body() notification: TelegramNotification) {
+  //   return this.telegramBotService.order(notification);
+  // }
 }
