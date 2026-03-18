@@ -12,10 +12,19 @@ export enum SyncStatus {
   FAILED = 'failed',
 }
 
+export interface SyncMetadata {
+  ordersCount?: number;
+  lastOrderId?: string;
+  [key: string]: unknown;
+}
+
 @Entity('sync_runs')
 export class SyncRun {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ type: 'varchar' })
+  name: string;
 
   @Column({ type: 'enum', enum: SyncStatus, default: SyncStatus.RUNNING })
   status: SyncStatus;
@@ -26,11 +35,8 @@ export class SyncRun {
   @Column({ type: 'timestamptz', nullable: true })
   finishedAt: Date | null;
 
-  @Column({ type: 'varchar', nullable: true })
-  lastOrderId: string | null;
-
-  @Column({ type: 'int', default: 0 })
-  ordersCount: number;
+  @Column({ type: 'jsonb', nullable: true })
+  metadata: SyncMetadata | null;
 
   @Column({ type: 'timestamptz', nullable: true })
   notifiedAt: Date | null;

@@ -19,6 +19,10 @@ export class CreateSyncRuns1773835398152 implements MigrationInterface {
             default: 'uuid_generate_v4()',
           },
           {
+            name: 'name',
+            type: 'varchar',
+          },
+          {
             name: 'status',
             type: 'enum',
             enum: ['running', 'completed', 'failed'],
@@ -34,14 +38,9 @@ export class CreateSyncRuns1773835398152 implements MigrationInterface {
             isNullable: true,
           },
           {
-            name: 'lastOrderId',
-            type: 'varchar',
+            name: 'metadata',
+            type: 'jsonb',
             isNullable: true,
-          },
-          {
-            name: 'ordersCount',
-            type: 'int',
-            default: 0,
           },
           {
             name: 'notifiedAt',
@@ -61,9 +60,14 @@ export class CreateSyncRuns1773835398152 implements MigrationInterface {
         ],
       }),
     );
+
+    await queryRunner.query(
+      `CREATE INDEX "IDX_sync_runs_name_finished_at" ON "sync_runs" ("name" DESC, "finishedAt" DESC)`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP INDEX "IDX_sync_runs_name_finished_at"`);
     await queryRunner.dropTable('sync_runs');
     await queryRunner.query(`DROP TYPE "sync_runs_status_enum"`);
   }

@@ -7,6 +7,7 @@ import {validationSchema} from './config/validation';
 import {TelegramModule} from './telegram/telegram.module';
 import {EushipmentsModule} from './eushipments/eushipments.module';
 import {StartupService} from './startup.service';
+import {SyncModule} from './sync/sync.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import {StartupService} from './startup.service';
     }),
     TelegramModule,
     EushipmentsModule,
+    SyncModule,
   ],
   controllers: [AppController],
   providers: [StartupService],
