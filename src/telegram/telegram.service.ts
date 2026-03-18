@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  OnApplicationBootstrap,
-  OnApplicationShutdown,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import TelegramBot, { Message, CallbackQuery } from 'node-telegram-bot-api';
 import { TelegramUpdate } from './telegram-update.service';
@@ -11,9 +6,7 @@ import { OrdersService } from '../eushipments/orders.service';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable()
-export class TelegramService
-  implements OnApplicationBootstrap, OnApplicationShutdown
-{
+export class TelegramService {
   private readonly logger = new Logger(TelegramService.name);
   private bot: TelegramBot;
 
@@ -25,17 +18,16 @@ export class TelegramService
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
-  onApplicationBootstrap() {
+  start() {
     const token = this.configService.getOrThrow<string>('eushipments.tgBotToken');
 
     // this.bot = new TelegramBot(token, { polling: true });
-
     // this.registerHandlers();
 
     this.logger.log('Telegram bot started (long polling)');
   }
 
-  onApplicationShutdown() {
+  stop() {
     this.bot?.stopPolling();
     this.logger.log('Telegram bot stopped');
   }
@@ -68,7 +60,7 @@ export class TelegramService
     const orderId = msg.text || 'undefined';
 
     const orderStatus = await lastValueFrom(
-      this.ordersService.getOrder(orderId),
+      this.ordersService.getOrders(),
     );
     await this.sendMessage(msg.chat.id, JSON.stringify(orderStatus));
   }

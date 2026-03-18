@@ -5,6 +5,7 @@ import configuration from './config/configuration';
 import {validationSchema} from './config/validation';
 import {TelegramModule} from './telegram/telegram.module';
 import {EushipmentsModule} from './eushipments/eushipments.module';
+import {StartupService} from './startup.service';
 
 @Module({
   imports: [
@@ -18,6 +19,6 @@ import {EushipmentsModule} from './eushipments/eushipments.module';
     }),
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [StartupService],
 })
 export class AppModule {}

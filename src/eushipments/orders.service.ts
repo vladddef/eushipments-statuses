@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
-import { catchError, map, of } from 'rxjs';
+import { of } from 'rxjs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class OrdersService {
@@ -16,24 +18,12 @@ export class OrdersService {
     this.apiKey = configService.getOrThrow<string>('eushipments.apiKey');
     this.apiUrl = apiUrl + '/' + apiVersion;
   }
-  getOrder(id: string) {
-    return this.httpService
-      .get<string>(`${this.apiUrl}/get-status/${id}`, {
-        params: {
-          testMode: 0,
-        },
-        responseType: 'json',
-        headers: { Authorization: `Bearer ${this.apiKey}` },
-      })
-      .pipe(
-        map((res) => {
-          return res.data;
-        }),
-        catchError((err) => {
-          return of({
-            error: err.response?.data?.error || 'API error'
-          });
-        }),
-      );
+
+  getOrders() {
+    const raw: string[][] = JSON.parse(
+      fs.readFileSync(path.resolve('orders.json'), 'utf-8'),
+    );
+    const rows = raw.slice(3, raw.length - 2);
+    return of(rows);
   }
 }
