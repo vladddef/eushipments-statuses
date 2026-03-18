@@ -16,8 +16,7 @@ export class TelegramBotService {
     private readonly ordersService: OrdersService,
     private readonly telegramService: TelegramService,
   ) {
-    const telegramBotToken =
-      configService.get<string>('EUSHIPMENTS_TG_BOT_TOKEN') || 'undefined';
+    const telegramBotToken = configService.getOrThrow<string>('eushipments.tgBotToken');
     this.bot = new Telegraf(telegramBotToken);
   }
 

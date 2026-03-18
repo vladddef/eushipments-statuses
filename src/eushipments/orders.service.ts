@@ -11,12 +11,9 @@ export class OrdersService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    const apiUrl =
-      configService.get<string>('EUSHIPMENTS_API_URL') || 'undefined';
-    const apiVersion =
-      configService.get<string>('EUSHIPMENTS_API_VERSION') || 'undefined';
-    this.apiKey =
-      configService.get<string>('EUSHIPMENTS_API_KEY') || 'undefined';
+    const apiUrl = configService.getOrThrow<string>('eushipments.apiUrl');
+    const apiVersion = configService.getOrThrow<string>('eushipments.apiVersion');
+    this.apiKey = configService.getOrThrow<string>('eushipments.apiKey');
     this.apiUrl = apiUrl + '/' + apiVersion;
   }
   getOrder(id: string) {

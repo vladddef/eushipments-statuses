@@ -26,13 +26,11 @@ export class TelegramService
   // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
   onApplicationBootstrap() {
-    const token = this.configService.getOrThrow<string>(
-      'EUSHIPMENTS_TG_BOT_TOKEN',
-    );
+    const token = this.configService.getOrThrow<string>('eushipments.tgBotToken');
 
-    this.bot = new TelegramBot(token, { polling: true });
+    // this.bot = new TelegramBot(token, { polling: true });
 
-    this.registerHandlers();
+    // this.registerHandlers();
 
     this.logger.log('Telegram bot started (long polling)');
   }
