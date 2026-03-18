@@ -1,5 +1,13 @@
 export default () => ({
   port: parseInt(process.env.APP_PORT ?? '3000', 10),
+  db: {
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT ?? '5432', 10),
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    sync: process.env.DB_SYNC === 'true',
+  },
   eushipments: {
     apiUrl: process.env.EUSHIPMENTS_API_URL,
     apiVersion: process.env.EUSHIPMENTS_API_VERSION,
