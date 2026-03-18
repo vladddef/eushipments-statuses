@@ -2,6 +2,7 @@ import {Module} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {TypeOrmModule} from '@nestjs/typeorm';
+import {ScheduleModule} from '@nestjs/schedule';
 import configuration from './config/configuration';
 import {validationSchema} from './config/validation';
 import {TelegramModule} from './telegram/telegram.module';
@@ -30,6 +31,7 @@ import {SyncModule} from './sync/sync.module';
         synchronize: config.getOrThrow<boolean>('db.sync'),
       }),
     }),
+    ScheduleModule.forRoot(),
     TelegramModule,
     EushipmentsModule,
     SyncModule,
