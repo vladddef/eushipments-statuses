@@ -11,5 +11,6 @@ import { EushipmentsModule } from '../eushipments/eushipments.module';
     EushipmentsModule,
   ],
   providers: [SyncService, OrdersSyncService],
+  exports: [OrdersSyncService],
 })
 export class SyncModule {}

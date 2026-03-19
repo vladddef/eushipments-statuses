@@ -1,16 +1,13 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { OrdersSyncService } from './orders-sync.service';
 
 @Injectable()
-export class SyncService implements OnApplicationBootstrap {
+export class SyncService {
   constructor(private readonly ordersSyncService: OrdersSyncService) {}
 
-  async onApplicationBootstrap() {
-    await this.ordersSyncService.sync();
-  }
-
-  // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_HOUR)
   async syncOrders() {
-    await this.ordersSyncService.sync();
+    await this.ordersSyncService.syncCurrent();
   }
 }
