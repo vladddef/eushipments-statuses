@@ -55,7 +55,11 @@ export class OrdersSyncService {
   }
 
   async syncDay(date: Date): Promise<void> {
-    const label = date.toISOString().slice(0, 10);
+    const label = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0'),
+    ].join('-');
     this.logger.log(`Syncing ${label}`);
 
     const { identifiers } = await this.syncRunRepo.insert({

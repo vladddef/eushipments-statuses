@@ -6,7 +6,7 @@ import { OrdersSyncService } from './orders-sync.service';
 export class SyncService {
   constructor(private readonly ordersSyncService: OrdersSyncService) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async syncOrders() {
     await this.ordersSyncService.syncCurrent();
   }

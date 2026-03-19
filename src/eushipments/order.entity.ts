@@ -17,8 +17,8 @@ export class Order {
   @Column({ type: 'varchar', unique: true })
   abw_number: string;
 
-  @Column({ type: 'varchar' })
-  awb_status: string;
+  @Column({ type: 'varchar', nullable: true })
+  awb_status: string | null;
 
   @Column({ type: 'varchar' })
   recipient_name: string;
