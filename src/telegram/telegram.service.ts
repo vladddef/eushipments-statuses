@@ -105,7 +105,7 @@ export class TelegramService {
     }
 
     const liveStatus = await this.apiService.getOrderStatus(order.abw_number);
-    await this.sendMessage(chatId, this.formatOrder(order, liveStatus));
+    await this.sendMessage(chatId, this.formatOrder(order, liveStatus?.status));
   }
 
   private formatOrder(order: Order, liveStatus?: any): string {
@@ -114,11 +114,8 @@ export class TelegramService {
       `Recipient: ${order.recipient_name}`,
       `Phone: ${order.phone_number ?? '—'}`,
       `City: ${order.city_name}`,
-      `Status: ${order.awb_status}`,
     ];
-    if (order.cod) lines.push(`COD: ${order.cod}`);
-    if (order.reference_number) lines.push(`Ref: ${order.reference_number}`);
-    if (liveStatus) lines.push(`Live status: ${JSON.stringify(liveStatus)}`);
+    if (liveStatus) lines.push(`Live status: ${liveStatus}`);
     return lines.join('\n');
   }
 
