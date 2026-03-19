@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SyncRun } from './sync.entity';
 import { SyncService } from './sync.service';
+import { OrdersSyncService } from './orders-sync.service';
 import { EushipmentsModule } from '../eushipments/eushipments.module';
 
 @Module({
@@ -9,6 +10,6 @@ import { EushipmentsModule } from '../eushipments/eushipments.module';
     TypeOrmModule.forFeature([SyncRun]),
     EushipmentsModule,
   ],
-  providers: [SyncService],
+  providers: [SyncService, OrdersSyncService],
 })
 export class SyncModule {}

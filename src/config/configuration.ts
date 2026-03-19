@@ -15,6 +15,7 @@ export default () => ({
     cabinetUrl: process.env.EUSHIPMENTS_CABINET_URL,
     cabinetUsername: process.env.EUSHIPMENTS_CABINET_USERNAME,
     cabinetPassword: process.env.EUSHIPMENTS_CABINET_PASSWORD,
+    syncStartDate: process.env.EUSHIPMENTS_SYNC_START_DATE,
     tgBotToken: process.env.EUSHIPMENTS_TG_BOT_TOKEN,
   },
 });

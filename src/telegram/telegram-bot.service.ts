@@ -23,9 +23,7 @@ export class TelegramBotService {
   async order(notification: TelegramNotification) {
     const orderId = notification.message;
 
-    const orderStatus = await lastValueFrom(
-      this.ordersService.getOrders(),
-    );
+    const orderStatus = await this.ordersService.getOrders();
     await this.telegramService.sendMessage(
       notification.userId,
       JSON.stringify(orderStatus),
