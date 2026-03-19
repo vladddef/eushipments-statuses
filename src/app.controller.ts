@@ -1,7 +1,5 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { OrdersService } from './eushipments/orders.service';
-import { Observable } from 'rxjs';
-import { TelegramBotService } from './telegram/telegram-bot.service';
+import {Controller, Get, Param} from '@nestjs/common';
+import {CabinetService} from "./eushipments/cabinet.service";
 
 export interface TelegramNotification {
   message: string;
@@ -10,18 +8,12 @@ export interface TelegramNotification {
 
 @Controller()
 export class AppController {
-  // constructor(
-  //   private readonly ordersService: OrdersService,
-  //   private readonly telegramBotService: TelegramBotService,
-  // ) {}
-  //
-  // @Get('orders/:id')
-  // getOrderStatus(@Param('id') id: string): Observable<any> {
-  //   return this.ordersService.getOrder(id);
-  // }
-  //
-  // @Post('/message')
-  // handleBotMessage(@Body() notification: TelegramNotification) {
-  //   return this.telegramBotService.order(notification);
-  // }
+  constructor(
+      private readonly cabinetService: CabinetService
+  ) {}
+
+  @Get('/')
+  async getOrderStatus(@Param('id') id: string) {
+    return [];
+  }
 }

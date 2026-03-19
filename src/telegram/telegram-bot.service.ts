@@ -16,17 +16,14 @@ export class TelegramBotService {
     private readonly ordersService: OrdersService,
     private readonly telegramService: TelegramService,
   ) {
-    const telegramBotToken =
-      configService.get<string>('EUSHIPMENTS_TG_BOT_TOKEN') || 'undefined';
+    const telegramBotToken = configService.getOrThrow<string>('eushipments.tgBotToken');
     this.bot = new Telegraf(telegramBotToken);
   }
 
   async order(notification: TelegramNotification) {
     const orderId = notification.message;
 
-    const orderStatus = await lastValueFrom(
-      this.ordersService.getOrder(orderId),
-    );
+    const orderStatus = await this.ordersService.getOrders();
     await this.telegramService.sendMessage(
       notification.userId,
       JSON.stringify(orderStatus),

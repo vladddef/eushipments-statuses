@@ -1,42 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
-import { catchError, map, of } from 'rxjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ILike, Repository } from 'typeorm';
+import { Order } from './order.entity';
+import { CabinetOrder, CabinetService } from './cabinet.service';
 
 @Injectable()
 export class OrdersService {
-  private apiUrl: string;
-  private apiKey: string;
   constructor(
-    private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
-  ) {
-    const apiUrl =
-      configService.get<string>('EUSHIPMENTS_API_URL') || 'undefined';
-    const apiVersion =
-      configService.get<string>('EUSHIPMENTS_API_VERSION') || 'undefined';
-    this.apiKey =
-      configService.get<string>('EUSHIPMENTS_API_KEY') || 'undefined';
-    this.apiUrl = apiUrl + '/' + apiVersion;
+    private readonly cabinetService: CabinetService,
+    @InjectRepository(Order)
+    private readonly orderRepo: Repository<Order>,
+  ) {}
+
+  async getOrders(startDate?: Date, endDate?: Date): Promise<CabinetOrder[]> {
+    return this.cabinetService.getOrders(startDate, endDate);
   }
-  getOrder(id: string) {
-    return this.httpService
-      .get<string>(`${this.apiUrl}/get-status/${id}`, {
-        params: {
-          testMode: 0,
-        },
-        responseType: 'json',
-        headers: { Authorization: `Bearer ${this.apiKey}` },
-      })
-      .pipe(
-        map((res) => {
-          return res.data;
-        }),
-        catchError((err) => {
-          return of({
-            error: err.response?.data?.error || 'API error'
-          });
-        }),
-      );
+
+  async upsertOrders(rows: CabinetOrder[]): Promise<void> {
+    const orders = rows
+      .filter((row) => row.SHIPMENT_NUMBER)
+      .map((row) => ({
+        abw_number: row.SHIPMENT_NUMBER,
+        sender_id: row.C_NAME,
+        reference_number: row.REFERENCE_NUMBER,
+        recipient_name: row.RECIPIENT,
+        phone_number: row.OP_PHONENUMBER || null,
+        city_name: row.CITY_NAME,
+        cod: row.COD || null,
+        awb_status: row.STATUS_TEXT,
+      }));
+
+    await this.orderRepo.upsert(orders, ['abw_number']);
+  }
+
+  async findByPhone(phone: string): Promise<Order | null> {
+    return this.orderRepo.findOne({
+      where: { phone_number: ILike(`%${phone}%`) },
+      order: { abw_number: 'DESC' },
+    });
+  }
+
+  async findByName(name: string): Promise<Order | null> {
+    return this.orderRepo.findOne({
+      where: { recipient_name: ILike(`%${name}%`) },
+      order: { abw_number: 'DESC' },
+    });
+  }
+
+  async findByAbwNumber(abwNumber: string): Promise<Order | null> {
+    return this.orderRepo.findOneBy({ abw_number: abwNumber });
   }
 }
