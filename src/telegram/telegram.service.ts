@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import TelegramBot, { Message, CallbackQuery } from 'node-telegram-bot-api';
 import { TelegramUpdate } from './telegram-update.service';
 import { OrdersService } from '../eushipments/orders.service';
+import { EushipmentsApiService } from '../eushipments/eushipments-api.service';
 import { Order } from '../eushipments/order.entity';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class TelegramService {
     private readonly configService: ConfigService,
     private readonly telegramUpdate: TelegramUpdate,
     private readonly ordersService: OrdersService,
+    private readonly apiService: EushipmentsApiService,
   ) {}
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────────
@@ -61,48 +63,52 @@ export class TelegramService {
 
     const chatId = msg.chat.id;
 
-    // Detect input type:
-    // - Pure digits 7+ chars → try AWB number first, then phone
-    // - Starts with + or contains only digits/spaces/dashes → phone search
-    // - Otherwise → name search
     const digitsOnly = /^\d{7,}$/.test(text);
     const looksLikePhone = /^[+\d][\d\s\-().]{5,}$/.test(text);
+    const digits = text.replace(/\D/g, '');
+    const letters = text.replace(/[^a-zA-ZÀ-žА-я]/g, '');
 
-    let orders: Order[] = [];
+    let order: Order | null;
     let searchType: string;
 
     if (digitsOnly) {
-      const byAbw = await this.ordersService.findByAbwNumber(text);
-      if (byAbw) {
-        orders = [byAbw];
+      order = await this.ordersService.findByAbwNumber(text);
+      if (order) {
         searchType = 'AWB number';
       } else {
-        orders = await this.ordersService.findByPhone(text);
+        if (digits.length < 10) {
+          await this.sendMessage(chatId, 'Phone number must be at least 10 digits.');
+          return;
+        }
+        order = await this.ordersService.findByPhone(text);
         searchType = 'phone';
       }
     } else if (looksLikePhone) {
-      orders = await this.ordersService.findByPhone(text);
+      if (digits.length < 10) {
+        await this.sendMessage(chatId, 'Phone number must be at least 10 digits.');
+        return;
+      }
+      order = await this.ordersService.findByPhone(text);
       searchType = 'phone';
     } else {
-      orders = await this.ordersService.findByName(text);
+      if (letters.length < 5) {
+        await this.sendMessage(chatId, 'Name must be at least 5 letters.');
+        return;
+      }
+      order = await this.ordersService.findByName(text);
       searchType = 'recipient name';
     }
 
-    if (orders.length === 0) {
+    if (!order) {
       await this.sendMessage(chatId, `No orders found by ${searchType}: "${text}"`);
       return;
     }
 
-    for (const order of orders.slice(0, 10)) {
-      await this.sendMessage(chatId, this.formatOrder(order));
-    }
-
-    if (orders.length > 10) {
-      await this.sendMessage(chatId, `... and ${orders.length - 10} more results.`);
-    }
+    const liveStatus = await this.apiService.getOrderStatus(order.abw_number);
+    await this.sendMessage(chatId, this.formatOrder(order, liveStatus));
   }
 
-  private formatOrder(order: Order): string {
+  private formatOrder(order: Order, liveStatus?: any): string {
     const lines = [
       `📦 AWB: ${order.abw_number}`,
       `Recipient: ${order.recipient_name}`,
@@ -112,6 +118,7 @@ export class TelegramService {
     ];
     if (order.cod) lines.push(`COD: ${order.cod}`);
     if (order.reference_number) lines.push(`Ref: ${order.reference_number}`);
+    if (liveStatus) lines.push(`Live status: ${JSON.stringify(liveStatus)}`);
     return lines.join('\n');
   }
 

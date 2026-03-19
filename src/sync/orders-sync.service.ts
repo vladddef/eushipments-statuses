@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SyncRun, SyncStatus } from './sync.entity';
+import { SyncMetadata, SyncRun, SyncStatus } from './sync.entity';
 import { OrdersService } from '../eushipments/orders.service';
 
 @Injectable()
@@ -58,33 +58,35 @@ export class OrdersSyncService {
     const label = date.toISOString().slice(0, 10);
     this.logger.log(`Syncing ${label}`);
 
-    const run = await this.syncRunRepo.save(
-      this.syncRunRepo.create({
-        name: `orders_sync_${label}`,
-        status: SyncStatus.RUNNING,
-        startedAt: new Date(),
-      }),
-    );
+    const { identifiers } = await this.syncRunRepo.insert({
+      name: `orders_sync_${label}`,
+      status: SyncStatus.RUNNING,
+      startedAt: new Date(),
+    });
+    const runId: string = identifiers[0].id;
+
+    let status: SyncStatus;
+    let finishedAt: Date;
+    let metadata: SyncMetadata;
 
     try {
       const orders = await this.ordersService.getOrders(date, date);
       await this.ordersService.upsertOrders(orders);
 
-      run.status = SyncStatus.COMPLETED;
-      run.finishedAt = new Date();
-      run.metadata = {
+      status = SyncStatus.COMPLETED;
+      metadata = {
         date: label,
         ordersCount: orders.length,
         lastOrderId: orders.at(-1)?.SHIPMENT_NUMBER,
       };
     } catch (err) {
-      run.status = SyncStatus.FAILED;
-      run.finishedAt = new Date();
-      run.metadata = { date: label, error: err?.message };
+      status = SyncStatus.FAILED;
+      metadata = { date: label, error: err?.message };
       this.logger.error(`Sync failed for ${label}`, err);
     }
 
-    await this.syncRunRepo.save(run);
-    this.logger.log(`Sync ${label} finished — status: ${run.status}`);
+    finishedAt = new Date();
+    await this.syncRunRepo.update(runId, { status, finishedAt, metadata: metadata as any });
+    this.logger.log(`Sync ${label} finished — status: ${status}`);
   }
 }

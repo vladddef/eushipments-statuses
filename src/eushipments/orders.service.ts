@@ -33,12 +33,18 @@ export class OrdersService {
     await this.orderRepo.upsert(orders, ['abw_number']);
   }
 
-  async findByPhone(phone: string): Promise<Order[]> {
-    return this.orderRepo.findBy({ phone_number: ILike(`%${phone}%`) });
+  async findByPhone(phone: string): Promise<Order | null> {
+    return this.orderRepo.findOne({
+      where: { phone_number: ILike(`%${phone}%`) },
+      order: { abw_number: 'DESC' },
+    });
   }
 
-  async findByName(name: string): Promise<Order[]> {
-    return this.orderRepo.findBy({ recipient_name: ILike(`%${name}%`) });
+  async findByName(name: string): Promise<Order | null> {
+    return this.orderRepo.findOne({
+      where: { recipient_name: ILike(`%${name}%`) },
+      order: { abw_number: 'DESC' },
+    });
   }
 
   async findByAbwNumber(abwNumber: string): Promise<Order | null> {
