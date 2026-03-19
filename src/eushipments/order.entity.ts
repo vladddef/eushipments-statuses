@@ -2,10 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+@Index('idx_orders_phone_number', ['phone_number'])
+@Index('idx_orders_recipient_name', ['recipient_name'])
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn('uuid')

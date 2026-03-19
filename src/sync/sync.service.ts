@@ -38,6 +38,7 @@ export class SyncService implements OnApplicationBootstrap {
 
     try {
       const orders = await lastValueFrom(this.ordersService.getOrders());
+      await this.ordersService.upsertOrders(orders);
 
       run.status = SyncStatus.COMPLETED;
       run.finishedAt = new Date();

@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: crm
     volumes:
       - pgdata:/var/lib/postgresql/data # Persistent data storage
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
 volumes:

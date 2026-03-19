@@ -10,10 +10,10 @@ export class StartupService implements OnApplicationBootstrap, OnApplicationShut
   constructor(private readonly telegram: TelegramService) {}
 
   onApplicationBootstrap() {
-    this.telegram.start();
+    // this.telegram.start();
   }
 
   onApplicationShutdown() {
-    this.telegram.stop();
+    // this.telegram.stop();
   }
 }

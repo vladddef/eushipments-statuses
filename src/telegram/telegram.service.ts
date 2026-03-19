@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import TelegramBot, { Message, CallbackQuery } from 'node-telegram-bot-api';
 import { TelegramUpdate } from './telegram-update.service';
 import { OrdersService } from '../eushipments/orders.service';
-import { lastValueFrom } from 'rxjs';
+import { Order } from '../eushipments/order.entity';
 
 @Injectable()
 export class TelegramService {
@@ -21,8 +21,8 @@ export class TelegramService {
   start() {
     const token = this.configService.getOrThrow<string>('eushipments.tgBotToken');
 
-    // this.bot = new TelegramBot(token, { polling: true });
-    // this.registerHandlers();
+    this.bot = new TelegramBot(token, { polling: true });
+    this.registerHandlers();
 
     this.logger.log('Telegram bot started (long polling)');
   }
@@ -37,10 +37,9 @@ export class TelegramService {
   private registerHandlers() {
     // All text messages
     this.bot.on('message', (msg: Message) => {
-      this.handleMessage(msg);
-      // this.telegramUpdate
-      //   .onMessage(msg)
-      //   .catch((err) => this.logger.error('onMessage error', err));
+      this.handleMessage(msg).catch((err) =>
+        this.logger.error('handleMessage error', err),
+      );
     });
 
     // Inline keyboard callbacks
@@ -57,12 +56,63 @@ export class TelegramService {
   }
 
   async handleMessage(msg: Message): Promise<void> {
-    const orderId = msg.text || 'undefined';
+    const text = (msg.text ?? '').trim();
+    if (!text || text.startsWith('/')) return;
 
-    const orderStatus = await lastValueFrom(
-      this.ordersService.getOrders(),
-    );
-    await this.sendMessage(msg.chat.id, JSON.stringify(orderStatus));
+    const chatId = msg.chat.id;
+
+    // Detect input type:
+    // - Pure digits 7+ chars → try AWB number first, then phone
+    // - Starts with + or contains only digits/spaces/dashes → phone search
+    // - Otherwise → name search
+    const digitsOnly = /^\d{7,}$/.test(text);
+    const looksLikePhone = /^[+\d][\d\s\-().]{5,}$/.test(text);
+
+    let orders: Order[] = [];
+    let searchType: string;
+
+    if (digitsOnly) {
+      const byAbw = await this.ordersService.findByAbwNumber(text);
+      if (byAbw) {
+        orders = [byAbw];
+        searchType = 'AWB number';
+      } else {
+        orders = await this.ordersService.findByPhone(text);
+        searchType = 'phone';
+      }
+    } else if (looksLikePhone) {
+      orders = await this.ordersService.findByPhone(text);
+      searchType = 'phone';
+    } else {
+      orders = await this.ordersService.findByName(text);
+      searchType = 'recipient name';
+    }
+
+    if (orders.length === 0) {
+      await this.sendMessage(chatId, `No orders found by ${searchType}: "${text}"`);
+      return;
+    }
+
+    for (const order of orders.slice(0, 10)) {
+      await this.sendMessage(chatId, this.formatOrder(order));
+    }
+
+    if (orders.length > 10) {
+      await this.sendMessage(chatId, `... and ${orders.length - 10} more results.`);
+    }
+  }
+
+  private formatOrder(order: Order): string {
+    const lines = [
+      `📦 AWB: ${order.abw_number}`,
+      `Recipient: ${order.recipient_name}`,
+      `Phone: ${order.phone_number ?? '—'}`,
+      `City: ${order.city_name}`,
+      `Status: ${order.awb_status}`,
+    ];
+    if (order.cod) lines.push(`COD: ${order.cod}`);
+    if (order.reference_number) lines.push(`Ref: ${order.reference_number}`);
+    return lines.join('\n');
   }
 
   // ─── Public API ───────────────────────────────────────────────────────────────
