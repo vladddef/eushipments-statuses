@@ -14,11 +14,10 @@ export class Order {
   @Column({ type: 'varchar', unique: true })
   abw_number: string;
 
-    @Column({ type: 'varchar' })
-    awb_status: string;
+  @Column({ type: 'varchar' })
+  awb_status: string;
 
-
-    @Column({ type: 'varchar' })
+  @Column({ type: 'varchar' })
   recipient_name: string;
 
   @Column({ type: 'varchar' })
@@ -41,10 +40,10 @@ export class Order {
 
   @Column({ type: 'varchar', nullable: true })
   cod: string | null;
-  
-  @CreateDateColumn({ type: 'timestamptz' })
+
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
 }

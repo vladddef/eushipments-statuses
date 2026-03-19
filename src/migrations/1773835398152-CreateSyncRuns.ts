@@ -29,11 +29,11 @@ export class CreateSyncRuns1773835398152 implements MigrationInterface {
             default: `'running'`,
           },
           {
-            name: 'startedAt',
+            name: 'started_at',
             type: 'timestamptz',
           },
           {
-            name: 'finishedAt',
+            name: 'finished_at',
             type: 'timestamptz',
             isNullable: true,
           },
@@ -43,17 +43,17 @@ export class CreateSyncRuns1773835398152 implements MigrationInterface {
             isNullable: true,
           },
           {
-            name: 'notifiedAt',
+            name: 'notified_at',
             type: 'timestamptz',
             isNullable: true,
           },
           {
-            name: 'createdAt',
+            name: 'created_at',
             type: 'timestamptz',
             default: 'now()',
           },
           {
-            name: 'updatedAt',
+            name: 'updated_at',
             type: 'timestamptz',
             default: 'now()',
           },
@@ -62,13 +62,15 @@ export class CreateSyncRuns1773835398152 implements MigrationInterface {
     );
 
     await queryRunner.query(
-      `CREATE INDEX "IDX_sync_runs_name_finished_at" ON "sync_runs" ("name" DESC, "finishedAt" DESC)`,
+      `CREATE INDEX if not exists "IDX_sync_runs_name_finished_at" ON "sync_runs" ("name" DESC, "finished_at" DESC)`,
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_sync_runs_name_finished_at"`);
+    await queryRunner.query(
+      `DROP INDEX if exists "IDX_sync_runs_name_finished_at"`,
+    );
     await queryRunner.dropTable('sync_runs');
-    await queryRunner.query(`DROP TYPE "sync_runs_status_enum"`);
+    await queryRunner.query(`DROP TYPE if exists "sync_runs_status_enum"`);
   }
 }
