@@ -44,6 +44,10 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             source "$NVM_DIR/nvm.sh"
             cd ~/app
-            npm ci --omit=dev
+            LOCK_HASH=$(sha256sum package-lock.json | cut -d' ' -f1)
+            if [ ! -d node_modules ] || [ "$LOCK_HASH" != "$(cat .pkg-lock-hash 2>/dev/null)" ]; then
+              npm ci --omit=dev
+              echo "$LOCK_HASH" > .pkg-lock-hash
+            fi
             pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
             pm2 save
