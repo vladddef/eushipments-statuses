@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import TelegramBot, { Message, CallbackQuery } from 'node-telegram-bot-api';
-import { TelegramUpdate } from './telegram-update.service';
+import TelegramBot, { Message } from 'node-telegram-bot-api';
 import { OrdersService } from '../eushipments/orders.service';
 import { EushipmentsApiService } from '../eushipments/eushipments-api.service';
 import { Order } from '../eushipments/order.entity';
@@ -13,19 +12,14 @@ export class TelegramService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly telegramUpdate: TelegramUpdate,
     private readonly ordersService: OrdersService,
     private readonly apiService: EushipmentsApiService,
   ) {}
 
-  // ─── Lifecycle ────────────────────────────────────────────────────────────────
-
   start() {
     const token = this.configService.getOrThrow<string>('eushipments.tgBotToken');
-
     this.bot = new TelegramBot(token, { polling: true });
     this.registerHandlers();
-
     this.logger.log('Telegram bot started (long polling)');
   }
 
@@ -34,21 +28,12 @@ export class TelegramService {
     this.logger.log('Telegram bot stopped');
   }
 
-  // ─── Handlers registration ────────────────────────────────────────────────────
-
   private registerHandlers() {
     // All text messages
     this.bot.on('message', (msg: Message) => {
       this.handleMessage(msg).catch((err) =>
         this.logger.error('handleMessage error', err),
       );
-    });
-
-    // Inline keyboard callbacks
-    this.bot.on('callback_query', (query: CallbackQuery) => {
-      this.telegramUpdate
-        .onCallbackQuery(query)
-        .catch((err) => this.logger.error('onCallbackQuery error', err));
     });
 
     // Polling errors
@@ -120,27 +105,11 @@ export class TelegramService {
   }
 
   // ─── Public API ───────────────────────────────────────────────────────────────
-
   async sendMessage(
     chatId: number | string,
     text: string,
     options?: TelegramBot.SendMessageOptions,
   ): Promise<Message> {
     return this.bot.sendMessage(chatId, text, options);
-  }
-
-  async sendPhoto(
-    chatId: number | string,
-    photo: string,
-    options?: TelegramBot.SendPhotoOptions,
-  ): Promise<Message> {
-    return this.bot.sendPhoto(chatId, photo, options);
-  }
-
-  async answerCallbackQuery(
-    callbackQueryId: string,
-    options?: TelegramBot.AnswerCallbackQueryOptions,
-  ): Promise<boolean> {
-    return this.bot.answerCallbackQuery(callbackQueryId, options);
   }
 }
