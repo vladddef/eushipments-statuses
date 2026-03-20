@@ -28,7 +28,7 @@ export class TelegramService {
   private registerHandlers() {
     this.bot.on('message', (msg: Message) => {
       this.orderLookupHandler
-        .handle(msg)
+        .handle(msg, (chatId, text) => this.sendMessage(chatId, text).then(() => undefined))
         .catch((err) => this.logger.error('handleMessage error', err));
     });
 

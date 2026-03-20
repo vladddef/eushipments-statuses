@@ -16,4 +16,7 @@ export const validationSchema = Joi.object({
   EUSHIPMENTS_SYNC_START_DATE: Joi.string().pattern(/^\d{2}\/\d{2}\/\d{4}$/).required(),
   EUSHIPMENTS_TG_BOT_TOKEN: Joi.string().required(),
   TG_ADMIN_USER_ID: Joi.number().required(),
+  ADMIN_EMAIL: Joi.string().email().required(),
+  ADMIN_PASSWORD: Joi.string().required(),
+  ADMIN_COOKIE_SECRET: Joi.string().min(32).required(),
 });

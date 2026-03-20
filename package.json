@@ -26,6 +26,9 @@
     "migration:revert": "ts-node -P tsconfig.migration.json -r tsconfig-paths/register ./node_modules/typeorm/cli migration:revert -d src/data-source.ts"
   },
   "dependencies": {
+    "@adminjs/express": "^5.1.0",
+    "@adminjs/nestjs": "^5.1.1",
+    "@adminjs/typeorm": "^3.0.2",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
@@ -34,8 +37,11 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/schedule": "^6.1.1",
     "@nestjs/typeorm": "^11.0.0",
+    "adminjs": "^6.8.7",
     "axios": "^1.13.6",
     "dotenv": "^17.3.1",
+    "express-formidable": "^1.2.0",
+    "express-session": "^1.19.0",
     "joi": "^18.0.2",
     "nestjs-telegraf": "^2.9.1",
     "node-telegram-bot-api": "^0.67.0",
