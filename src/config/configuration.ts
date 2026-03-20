@@ -17,5 +17,6 @@ export default () => ({
     cabinetPassword: process.env.EUSHIPMENTS_CABINET_PASSWORD,
     syncStartDate: process.env.EUSHIPMENTS_SYNC_START_DATE,
     tgBotToken: process.env.EUSHIPMENTS_TG_BOT_TOKEN,
+    tgAdminUserId: parseInt(process.env.TG_ADMIN_USER_ID ?? '0', 10),
   },
 });

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { chromium } from 'playwright-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import {formatDate} from "../helpers/time";
 
 chromium.use(StealthPlugin());
 
@@ -69,17 +70,10 @@ export class CabinetService {
     return { browser, page };
   }
 
-  private formatDate(date: Date): string {
-    const dd = String(date.getDate()).padStart(2, '0');
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const yyyy = date.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;
-  }
-
   async getOrders(startDate?: Date, endDate?: Date): Promise<CabinetOrder[]> {
     const today = new Date();
-    const start = this.formatDate(startDate ?? today);
-    const end = this.formatDate(endDate ?? today);
+    const start = formatDate(startDate ?? today);
+    const end = formatDate(endDate ?? today);
     const query = `stats/table?startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`;
 
     const { browser, page } = await this.getPage(query);

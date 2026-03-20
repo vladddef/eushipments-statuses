@@ -14,11 +14,11 @@ export class StartupService implements OnApplicationBootstrap, OnApplicationShut
   ) {}
 
   async onApplicationBootstrap() {
-    this.telegram.start();
-    await this.ordersSyncService.syncFromStart();
+    // this.telegram.start();
+    // await this.ordersSyncService.syncFromStart();
   }
 
   onApplicationShutdown() {
-    this.telegram.stop();
+    // this.telegram.stop();
   }
 }

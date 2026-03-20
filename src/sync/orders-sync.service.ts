@@ -2,8 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SyncMetadata, SyncRun, SyncStatus } from './sync.entity';
 import { OrdersService } from '../eushipments/orders.service';
+
+export class SyncCompletedEvent {
+  constructor(
+    public readonly date: string,
+    public readonly status: SyncStatus,
+    public readonly ordersCount?: number,
+    public readonly error?: string,
+  ) {}
+}
 
 @Injectable()
 export class OrdersSyncService {
@@ -15,6 +25,7 @@ export class OrdersSyncService {
     @InjectRepository(SyncRun)
     private readonly syncRunRepo: Repository<SyncRun>,
     private readonly ordersService: OrdersService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     const raw = configService.getOrThrow<string>('eushipments.syncStartDate');
     const [dd, mm, yyyy] = raw.split('/').map(Number);
@@ -72,6 +83,7 @@ export class OrdersSyncService {
     let status: SyncStatus;
     let finishedAt: Date;
     let metadata: SyncMetadata;
+    let error;
 
     try {
       const orders = await this.ordersService.getOrders(date, date);
@@ -86,11 +98,16 @@ export class OrdersSyncService {
     } catch (err) {
       status = SyncStatus.FAILED;
       metadata = { date: label, error: err?.message };
+      error = err;
       this.logger.error(`Sync failed for ${label}`, err);
     }
 
     finishedAt = new Date();
     await this.syncRunRepo.update(runId, { status, finishedAt, metadata: metadata as any });
     this.logger.log(`Sync ${label} finished — status: ${status}`);
+    this.eventEmitter.emit(
+      'sync.completed',
+      new SyncCompletedEvent(label, status, metadata.ordersCount, error),
+    );
   }
 }
