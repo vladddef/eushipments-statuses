@@ -28,8 +28,15 @@ export class TelegramService {
   private registerHandlers() {
     this.bot.on('message', (msg: Message) => {
       this.orderLookupHandler
-        .handle(msg)
-        .catch((err) => this.logger.error('handleMessage error', err));
+        .handle(msg, (chatId, text) =>
+          this.sendMessage(chatId, text).then(() => undefined),
+        )
+        .catch((err: Error) =>
+          this.logger.error(
+            `userId=${msg.chat.id} | error: ${err.message}`,
+            err.stack,
+          ),
+        );
     });
 
     this.bot.on('polling_error', (err) => {

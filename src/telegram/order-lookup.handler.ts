@@ -1,19 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Message } from 'node-telegram-bot-api';
 import { OrdersService } from '../eushipments/orders.service';
 import { EushipmentsApiService } from '../eushipments/eushipments-api.service';
 import { Order } from '../eushipments/order.entity';
-import { TelegramService } from './telegram.service';
+
+type SendMessage = (chatId: number, text: string) => Promise<void>;
 
 @Injectable()
 export class OrderLookupHandler {
+  private readonly logger = new Logger(OrderLookupHandler.name);
+
   constructor(
     private readonly ordersService: OrdersService,
     private readonly apiService: EushipmentsApiService,
-    private readonly telegramService: TelegramService,
   ) {}
 
-  async handle(msg: Message): Promise<void> {
+  async handle(msg: Message, sendMessage: SendMessage): Promise<void> {
     const text = (msg.text ?? '').trim();
     if (!text || text.startsWith('/')) return;
 
@@ -33,7 +35,7 @@ export class OrderLookupHandler {
         searchType = 'AWB number';
       } else {
         if (digits.length < 10) {
-          await this.telegramService.sendMessage(chatId, 'Phone number must be at least 10 digits.');
+          await sendMessage(chatId, 'Phone number must be at least 10 digits.');
           return;
         }
         order = await this.ordersService.findByPhone(text);
@@ -41,14 +43,14 @@ export class OrderLookupHandler {
       }
     } else if (looksLikePhone) {
       if (digits.length < 10) {
-        await this.telegramService.sendMessage(chatId, 'Phone number must be at least 10 digits.');
+        await sendMessage(chatId, 'Phone number must be at least 10 digits.');
         return;
       }
       order = await this.ordersService.findByPhone(text);
       searchType = 'phone';
     } else {
       if (letters.length < 5) {
-        await this.telegramService.sendMessage(chatId, 'Name must be at least 5 letters.');
+        await sendMessage(chatId, 'Name must be at least 5 letters.');
         return;
       }
       order = await this.ordersService.findByName(text);
@@ -56,15 +58,21 @@ export class OrderLookupHandler {
     }
 
     if (!order) {
-      await this.telegramService.sendMessage(chatId, `No orders found by ${searchType}: "${text}"`);
+      this.logger.log(`userId=${chatId} | not found by ${searchType}: "${text}"`);
+      await sendMessage(chatId, `No orders found by ${searchType}: "${text}"`);
       return;
     }
 
-    const liveStatus = await this.apiService.getOrderStatus(order.abw_number);
-    await this.telegramService.sendMessage(chatId, this.formatOrder(order, liveStatus?.status));
+    const liveStatus = (await this.apiService.getOrderStatus(order.abw_number)) as
+      | { status?: string }
+      | null
+      | undefined;
+    const status = liveStatus?.status ?? order.awb_status ?? 'unknown';
+    this.logger.log(`userId=${chatId} | abw=${order.abw_number} | status=${status}`);
+    await sendMessage(chatId, this.formatOrder(order, liveStatus?.status));
   }
 
-  private formatOrder(order: Order, liveStatus?: any): string {
+  private formatOrder(order: Order, liveStatus?: string): string {
     const lines = [
       `📦 AWB: ${order.abw_number}`,
       `Recipient: ${order.recipient_name}`,
