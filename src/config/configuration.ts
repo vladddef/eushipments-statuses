@@ -15,6 +15,8 @@ export default () => ({
     cabinetUrl: process.env.EUSHIPMENTS_CABINET_URL,
     cabinetUsername: process.env.EUSHIPMENTS_CABINET_USERNAME,
     cabinetPassword: process.env.EUSHIPMENTS_CABINET_PASSWORD,
+    cabinetProfilePath: process.env.EUSHIPMENTS_CABINET_PROFILE_PATH,
+    cabinetSessionPath: process.env.EUSHIPMENTS_CABINET_SESSION_PATH,
     syncStartDate: process.env.EUSHIPMENTS_SYNC_START_DATE,
     tgBotToken: process.env.EUSHIPMENTS_TG_BOT_TOKEN,
     tgAdminUserId: parseInt(process.env.TG_ADMIN_USER_ID ?? '0', 10),
