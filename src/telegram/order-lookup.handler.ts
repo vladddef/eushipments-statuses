@@ -58,17 +58,20 @@ export class OrderLookupHandler {
     }
 
     if (!order) {
-      this.logger.log(`userId=${chatId} | not found by ${searchType}: "${text}"`);
+      this.logger.log(
+        `userId=${chatId} | not found by ${searchType}: "${text}"`,
+      );
       await sendMessage(chatId, `No orders found by ${searchType}: "${text}"`);
       return;
     }
 
-    const liveStatus = (await this.apiService.getOrderStatus(order.abw_number)) as
-      | { status?: string }
-      | null
-      | undefined;
+    const liveStatus = (await this.apiService.getOrderStatus(
+      order.abw_number,
+    )) as { status?: string } | null | undefined;
     const status = liveStatus?.status ?? order.awb_status ?? 'unknown';
-    this.logger.log(`userId=${chatId} | abw=${order.abw_number} | status=${status}`);
+    this.logger.log(
+      `userId=${chatId} | abw=${order.abw_number} | status=${status}`,
+    );
     await sendMessage(chatId, this.formatOrder(order, liveStatus?.status));
   }
 

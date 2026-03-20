@@ -7,7 +7,9 @@ import { TelegramService } from './telegram/telegram.service';
 import { OrdersSyncService } from './sync/orders-sync.service';
 
 @Injectable()
-export class StartupService implements OnApplicationBootstrap, OnApplicationShutdown {
+export class StartupService
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   constructor(
     private readonly telegram: TelegramService,
     private readonly ordersSyncService: OrdersSyncService,
